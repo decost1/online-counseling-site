@@ -1,3 +1,9 @@
+
+import heroImg     from "./photos/counseling-1.jpg";
+import readingImg  from "./photos/cozy-reading.jpg";
+import sunlightImg from "./photos/sunlight-portrait.jpg";
+
+
 import { useState } from "react";
 
 function Container({ children, className = "" }) {
@@ -48,6 +54,74 @@ export default function App() {
     <div className="min-h-screen bg-gradient-to-b from-stone-50 to-white text-stone-800 scroll-smooth">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-stone-200 bg-white/80 backdrop-blur">
+      
+
+{/* Header を使わないなら削除。使うなら中身を戻して閉じタグを入れる */}
+// <header className="sticky top-0 z-50 border-b border-stone-200 bg-white/80 backdrop-blur">
+//   ...ナビなど...
+// </header>
+
+{/* ===== Hero / About セクション（画像を表示） ===== */}
+<Section
+  id="about"
+  title="はじめての方へ"
+  intro="オンラインで安心して相談できる、やさしいカウンセリングをご提供します。"
+>
+  {/* メイン画像 */}
+  <img
+    src={heroImg}
+    alt="オンラインカウンセリングの雰囲気"
+    loading="lazy"
+    className="mx-auto rounded-lg shadow w-full max-w-[720px] h-auto"
+  />
+
+  {/* サブ画像（任意） */}
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
+    <img src={readingImg}  alt="落ち着いて読書する時間"   loading="lazy" className="rounded-xl shadow w-full h-auto object-cover" />
+    <img src={sunlightImg} alt="自然光のポートレート"     loading="lazy" className="rounded-xl shadow w-full h-auto object-cover" />
+    <img src={heroImg}     alt="相談風景"                 loading="lazy" className="rounded-xl shadow w-full h-auto object-cover" />
+  </div>
+</Section>
+
+
+
+{/* ===== Hero / About セクション（画像を表示） ===== */}
+<Section
+  id="about"
+  title="はじめての方へ"
+  intro="オンラインで安心して相談できる、やさしいカウンセリングをご提供します。"
+>
+  {/* メイン画像 */}
+  <img
+    src={heroImg}
+    alt="オンラインカウンセリングの雰囲気"
+    loading="lazy"
+    className="mx-auto rounded-lg shadow w-full max-w-[720px] h-auto"
+  />
+
+  {/* サブ画像を並べる */}
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
+    <img
+      src={readingImg}
+      alt="落ち着いて読書する時間"
+      loading="lazy"
+      className="rounded-xl shadow w-full h-auto object-cover"
+    />
+    <img
+      src={sunlightImg}
+      alt="自然光のポートレート"
+      loading="lazy"
+      className="rounded-xl shadow w-full h-auto object-cover"
+    />
+    <img
+      src={heroImg}
+      alt="相談風景"
+      loading="lazy"
+      className="rounded-xl shadow w-full h-auto object-cover"
+    />
+  </div>
+</Section>
+
         <Container className="py-3 flex items-center justify-between">
           <a href="#" className="font-extrabold tracking-tight">sola counseling</a>
           <nav className="hidden md:flex gap-6 text-sm">
