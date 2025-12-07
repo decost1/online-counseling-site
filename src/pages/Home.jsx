@@ -4,8 +4,35 @@ console.log("🟢 Home render");
 import { Link } from "react-router-dom";
 import FlowCard from "../components/FlowCard";
 import FeatureCard from "../components/FeatureCard";
+// --- 追加ここから ---
+import { useEffect, useState } from "react";
+import { sanity } from "../../komorebi/lib/sanityClient";
+import { siteSettingsQuery } from "../../komorebi/lib/queries";
+// --- 追加ここまで ---
+
 
 export default function Home() {
+// --- 追加ここから ---
+  const [settings, setSettings] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let ignore = false;
+    setLoading(true);
+    sanity
+      .fetch(siteSettingsQuery)
+      .then((data) => { if (!ignore) setSettings(data); })
+      .catch((e) => setError(e?.message ?? String(e)))
+      .finally(() => setLoading(false));
+    return () => { ignore = true; };
+  }, []);
+
+  // 表示用：displayRate（25 など）があれば優先。なければ 0.25 を 25% に換算
+  const rate =
+    settings?.displayRate ??
+    (settings?.serviceFee != null ? settings.serviceFee * 100 : null);
+  // --- 追加ここまで ---  
   return (
     <div className="min-h-screen bg-gradient-to-b from-stone-50 to-white text-slate-800">
 {/* ===== Hero ===== */}
@@ -141,6 +168,19 @@ export default function Home() {
           </Link>
         </div>
       </section>
-    </div>
-  );
-}
+                      {/* --- Sanity（サイト設定）の表示 --- */}
+      <div className="mt-6">
+        {loading && <span className="text-gray-500 text-sm">読み込み中…</span>}
+        {error && <span className="text-red-600 text-sm">エラー: {error}</span>}
+        {!loading && !error && rate != null && (
+          <p className="text-sm text-slate-700">
+            手数料：{Number(rate).toFixed(2)}%
+          </p>
+        )}
+      </div>
+
+    {/* ここで outer の div を閉じる */}
+  </div>
+);   // return の閉じ
+}     // コンポーネントの閉じ
+

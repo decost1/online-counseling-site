@@ -1,6 +1,10 @@
-﻿import React, { useEffect, useState } from "react";
+﻿import logo from "../../assets/logo-komorebi.png";
+import React, { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { Menu, X, HeartHandshake, CalendarDays, MessageCircleQuestion, User2, Home as HomeIcon, ShieldCheck } from "lucide-react";
+
+import { sanity } from "../../../komorebi/lib/sanityClient";
+import { siteSettingsQuery } from "../../../komorebi/lib/queries";
 
 /**
  * KOMOREBI｜オンラインカウンセリング
@@ -51,7 +55,7 @@ const CONFIG = {
     name: "DECOST株式会社",
     address: "東京都〇〇区〇〇 0-0-0",
     hours: "受付 9:00–20:00（土日祝対応）",
-    mail: "info@example.com",
+    mail: "info@decost.net",
     phone: "0120-000-000",
   },
   legal: [
@@ -101,9 +105,18 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* ロゴ */}
           <Link to="/" className="flex items-center gap-2 group" aria-label={CONFIG.logoAlt}>
-            <div className="h-8 w-8 rounded-xl bg-emerald-500/90 group-hover:bg-emerald-500 transition-colors" />
-            <span className="font-bold text-lg tracking-wide">{CONFIG.logoText}</span>
-          </Link>
+  <img
+    src={logo}
+    alt={CONFIG.logoAlt}
+    className="h-9 w-9 rounded-xl object-contain"
+    width={36}
+    height={36}
+    loading="lazy"
+    decoding="async"
+  />
+  <span className="font-bold text-lg tracking-wide">{CONFIG.logoText}</span>
+</Link>
+
 
           {/* デスクトップナビ */}
           <nav className="hidden md:flex items-center gap-1">
@@ -186,9 +199,18 @@ export function Footer() {
           {/* 会社・連絡先 */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-xl bg-emerald-500/90" />
-              <span className="font-bold text-lg">{CONFIG.siteName}</span>
-            </div>
+  <img
+    src={logo}
+    alt={CONFIG.logoAlt}
+    className="h-8 w-8 rounded-xl object-contain"
+    width={32}
+    height={32}
+    loading="lazy"
+    decoding="async"
+  />
+  <span className="font-bold text-lg">{CONFIG.siteName}</span>
+</div>
+
             <p className="text-sm text-gray-600 leading-relaxed">
               こころに、やわらかな木漏れ日を。オンラインで安心して相談できるカウンセリングサービスです。
             </p>
