@@ -53,10 +53,10 @@ const CONFIG = {
   ],
   company: {
     name: "DECOST株式会社",
-    address: "東京都〇〇区〇〇 0-0-0",
-    hours: "受付 9:00–20:00（土日祝対応）",
+    address: "神奈川県座間市入谷西5丁目31番13号",
+    hours: "受付 8:00–19:00（土日祝対応）",
     mail: "info@decost.net",
-    phone: "0120-000-000",
+    phone: "050-5896-7854",
   },
   legal: [
     { label: "特定商取引法に基づく表記", to: "/legal/tokushoho" },

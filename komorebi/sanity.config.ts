@@ -10,6 +10,8 @@ export default defineConfig({
   projectId: 'ibiu2qpi',
   dataset: 'production',
 
+  basePath: '/studio',
+
   plugins: [
     structureTool({
       structure: (S: StructureBuilder) =>
