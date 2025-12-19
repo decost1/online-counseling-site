@@ -18,7 +18,7 @@ export default function Counselors() {
   useEffect(() => {
     client
       .fetch(
-        `*[_type == "counselor"] | order(name asc) {
+        `*[_type == "counselor"] | order(name desc) {
           _id,
           name,
           role,
