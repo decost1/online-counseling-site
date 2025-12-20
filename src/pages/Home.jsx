@@ -44,7 +44,7 @@ export default function Home() {
         ONLINE COUNSELING
       </p>
       <h1 className="text-3xl md:text-5xl font-extrabold leading-tight">
-        やさしく寄り添う
+        KOMOREBI
         <br className="hidden md:block" />
         オンラインカウンセリング
       </h1>
