@@ -1,15 +1,115 @@
 ﻿// src/pages/Booking.jsx
-import React from "react";
+import React, { useMemo, useRef, useState } from "react";
 
 export default function Booking() {
+  /**
+   * あなたの Google Form
+   * viewform のURLに入ってた ID（/d/e/●●●/viewform）
+   */
+  const FORM_ID = "1FAIpQLScRbC9pOKovONcctXYxZ3AwlSqKFG31Z8FYrPBwuUuIXC-_Dw";
+
+  // 送信先（formResponse が重要）
+  const FORM_ACTION = `https://docs.google.com/forms/d/e/${FORM_ID}/formResponse`;
+
+  /**
+   * ✅ entry対応（スクショの Form Data から）
+   * - 名前: entry.209069688
+   * - メール: entry.930441619
+   * - 希望相談方法: entry.1469325754
+   * - 第1希望 時間帯: entry.307579682
+   * - 第2希望 時間帯: entry.2089408309
+   * - 第1希望 日付: entry.102418911_year / _month / _day
+   * - 第2希望 日付: entry.67408525_year / _month / _day
+   *
+   * ⚠️「相談内容」「その他」は、スクショに entry が映ってなかったので
+   * いったんプレースホルダーで入れてあります（下で差し替え可能）
+   */
+  const ENTRY = useMemo(
+    () => ({
+      name: "entry.209069688",
+      email: "entry.930441619",
+
+      method: "entry.1469325754",
+
+      time1: "entry.307579682",
+      time2: "entry.2089408309",
+
+      date1y: "entry.102418911_year",
+      date1m: "entry.102418911_month",
+      date1d: "entry.102418911_day",
+
+      date2y: "entry.67408525_year",
+      date2m: "entry.67408525_month",
+      date2d: "entry.67408525_day",
+
+      // ↓↓↓ ここはあとで Network の Form Data を見て置き換えてOK
+      // 例: message: "entry.181779593",
+      message: "entry.181779593", // 今のスクショでは「夫婦関係」が入ってたやつ（相談内容っぽい）
+      other: "entry.168523998",   // 今のスクショでは空だったやつ（任意欄っぽい）
+    }),
+    []
+  );
+
+  const TIME_OPTIONS = [
+    "09:00〜10:00",
+    "10:00〜11:00",
+    "11:00〜12:00",
+    "14:00〜15:00",
+    "15:00〜16:00",
+    "19:00〜20:00",
+    "20:00〜21:00",
+  ];
+
+  const METHOD_OPTIONS = [
+    "ビデオ通話（Google Meet / Zoom /LINE 等）",
+    "通話のみ（音声・顔出しなし）",
+    "チャット相談（LINE・メール）",
+  ];
+
+  const iframeRef = useRef(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+
+  // フォーム入力（UI用）
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+
+  const [method, setMethod] = useState(METHOD_OPTIONS[0]);
+
+  const [date1, setDate1] = useState(""); // yyyy-mm-dd
+  const [date2, setDate2] = useState("");
+
+  const [time1, setTime1] = useState("");
+  const [time2, setTime2] = useState("");
+
+  const [message, setMessage] = useState("");
+  const [other, setOther] = useState("");
+
+  // yyyy-mm-dd を {y,m,d} に分解
+  const splitDate = (v) => {
+    if (!v) return { y: "", m: "", d: "" };
+    const [y, m, d] = v.split("-");
+    return { y, m: String(Number(m)), d: String(Number(d)) }; // 月日が "01" でも "1" に寄せる
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
+    setIsSending(true);
+    setSubmitted(false);
 
-    console.log("送信データ:", data);
-    alert("お問い合わせありがとうございます。内容を送信しました。");
+    // hidden iframe に投げるので、結果は読めない（でも送信はできる）
+    // 送信後にフォームをリセットして「送信しました」表示にする
+    setTimeout(() => {
+      setIsSending(false);
+      setSubmitted(true);
+    }, 800);
+
+    // 実際のPOSTは <form> がやる
+    e.currentTarget.submit();
   };
+
+  const d1 = splitDate(date1);
+  const d2 = splitDate(date2);
 
   return (
     <main className="bg-slate-50 min-h-screen">
@@ -19,173 +119,232 @@ export default function Booking() {
         </h1>
         <p className="text-slate-600 text-sm md:text-base mb-8 leading-relaxed">
           初回カウンセリングのご予約・ご相談はこちらから承っています。
-          ご入力いただいた内容をもとに、カウンセラーより
+          ご入力いただいた内容をもとに、カウンセラーより{" "}
           <span className="font-medium">24時間以内</span> を目安に
           日程調整のご連絡を差し上げます。
         </p>
 
+        {/* ✅ 送信先はGoogle Forms / hidden iframe で直POST */}
         <form
+          action={FORM_ACTION}
+          method="POST"
+          target="hidden_iframe"
           onSubmit={handleSubmit}
           className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 space-y-6"
         >
-          {/* ■ お名前 */}
+          {/* hidden iframe（画面遷移させないため） */}
+          <iframe
+            ref={iframeRef}
+            name="hidden_iframe"
+            title="hidden_iframe"
+            className="hidden"
+          />
+
+          {/* ★ Google Forms の “必須” になりがちな補助項目（入れておくと安定） */}
+          <input type="hidden" name="fvv" value="1" />
+          <input type="hidden" name="partialResponse" value='[null,null,"-1"]' />
+          <input type="hidden" name="pageHistory" value="0" />
+
+          {/* ■ お名前（必須） */}
           <div>
             <label className="block text-sm font-medium text-slate-800">
               お名前 <span className="text-rose-500 text-xs">必須</span>
             </label>
             <input
               type="text"
-              name="name"
               required
               placeholder="山田 花子"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
               focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             />
+            <input type="hidden" name={ENTRY.name} value={name} />
           </div>
 
-          {/* ■ メールアドレス */}
+          {/* ■ メールアドレス（必須） */}
           <div>
             <label className="block text-sm font-medium text-slate-800">
               メールアドレス <span className="text-rose-500 text-xs">必須</span>
             </label>
             <input
               type="email"
-              name="email"
               required
               placeholder="example@mail.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
               focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             />
             <p className="text-xs text-slate-500 mt-1">
               予約確定や日程調整のご連絡に使用します。
             </p>
+            <input type="hidden" name={ENTRY.email} value={email} />
           </div>
 
-          {/* ■ 年齢（任意） */}
+          {/* ■ 希望相談方法（必須・選択） */}
           <div>
             <label className="block text-sm font-medium text-slate-800">
-              年齢（任意）
-            </label>
-            <input
-              type="number"
-              name="age"
-              min="0"
-              placeholder="例：28"
-              className="mt-1 w-32 rounded-lg border border-slate-300 px-3 py-2 text-sm
-              focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-            />
-          </div>
-
-          {/* ■ 相談方法 */}
-          <div>
-            <label className="block text-sm font-medium text-slate-800">
-              相談方法 <span className="text-rose-500 text-xs">必須</span>
+              希望相談方法 <span className="text-rose-500 text-xs">必須</span>
             </label>
             <select
-              name="method"
               required
+              value={method}
+              onChange={(e) => setMethod(e.target.value)}
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white
               focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             >
-              <option>オンライン（ビデオ通話）</option>
-              <option>チャット相談</option>
-              <option>電話相談</option>
+              {METHOD_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
             </select>
+            <input type="hidden" name={ENTRY.method} value={method} />
           </div>
 
-          {/* ■ 希望日時 */}
+          {/* ■ 相談希望日（第1希望） 必須（カレンダー） */}
           <div>
             <label className="block text-sm font-medium text-slate-800">
-              希望日時 <span className="text-rose-500 text-xs">必須</span>
+              相談希望日（第1希望）{" "}
+              <span className="text-rose-500 text-xs">必須</span>
             </label>
-            <p className="text-xs text-slate-500 mt-1">
-              可能な範囲で、第3希望までご記入ください。
-            </p>
+            <input
+              type="date"
+              required
+              value={date1}
+              onChange={(e) => setDate1(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+              focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            />
 
-            <div className="mt-2 space-y-2">
-              <input
-                type="text"
-                name="date1"
-                required
-                placeholder="第1希望：例）○月○日（○）19:00〜21:00"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
-                focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-              />
-
-              <input
-                type="text"
-                name="date2"
-                placeholder="第2希望（任意）"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
-                focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-              />
-
-              <input
-                type="text"
-                name="date3"
-                placeholder="第3希望（任意）"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
-                focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-              />
-            </div>
+            {/* Google Forms の date は year/month/day に分かれる */}
+            <input type="hidden" name={ENTRY.date1y} value={d1.y} />
+            <input type="hidden" name={ENTRY.date1m} value={d1.m} />
+            <input type="hidden" name={ENTRY.date1d} value={d1.d} />
           </div>
 
-          {/* ■ 相談内容 */}
+          {/* ■ 相談希望日（第2希望） 必須（カレンダー） */}
+          <div>
+            <label className="block text-sm font-medium text-slate-800">
+              相談希望日（第2希望）{" "}
+              <span className="text-rose-500 text-xs">必須</span>
+            </label>
+            <input
+              type="date"
+              required
+              value={date2}
+              onChange={(e) => setDate2(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+              focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            />
+            <input type="hidden" name={ENTRY.date2y} value={d2.y} />
+            <input type="hidden" name={ENTRY.date2m} value={d2.m} />
+            <input type="hidden" name={ENTRY.date2d} value={d2.d} />
+          </div>
+
+          {/* ■ 相談希望時間帯（第1希望） 必須（選択） */}
+          <div>
+            <label className="block text-sm font-medium text-slate-800">
+              相談希望時間帯（第1希望）{" "}
+              <span className="text-rose-500 text-xs">必須</span>
+            </label>
+            <select
+              required
+              value={time1}
+              onChange={(e) => setTime1(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white
+              focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            >
+              <option value="" disabled>
+                選択
+              </option>
+              {TIME_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+            <input type="hidden" name={ENTRY.time1} value={time1} />
+          </div>
+
+          {/* ■ 相談希望時間帯（第2希望） 必須（選択） */}
+          <div>
+            <label className="block text-sm font-medium text-slate-800">
+              相談希望時間帯（第2希望）{" "}
+              <span className="text-rose-500 text-xs">必須</span>
+            </label>
+            <select
+              required
+              value={time2}
+              onChange={(e) => setTime2(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white
+              focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            >
+              <option value="" disabled>
+                選択
+              </option>
+              {TIME_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+            <input type="hidden" name={ENTRY.time2} value={time2} />
+          </div>
+
+          {/* ■ 相談内容（必須） */}
           <div>
             <label className="block text-sm font-medium text-slate-800">
               相談内容 <span className="text-rose-500 text-xs">必須</span>
             </label>
             <textarea
-              name="message"
               required
               rows={5}
-              placeholder="ご相談内容をご自由にお書きください。"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="ご相談したい内容を、差し支えない範囲でご記入ください。"
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm leading-relaxed
               focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             />
+            <input type="hidden" name={ENTRY.message} value={message} />
           </div>
 
-          {/* ■ カウンセリング経験（任意） */}
+          {/* ■ その他（任意） */}
           <div>
-            <p className="block text-sm font-medium text-slate-800 mb-1">
-              カウンセリング経験（任意）
-            </p>
-            <div className="flex gap-6 text-sm">
-              <label className="flex items-center gap-2">
-                <input type="radio" name="experience" value="ない" defaultChecked />
-                ない
-              </label>
-
-              <label className="flex items-center gap-2">
-                <input type="radio" name="experience" value="ある" />
-                ある
-              </label>
-            </div>
-          </div>
-
-          {/* ■ 同意 */}
-          <div className="border-t border-slate-200 pt-4">
-            <label className="flex items-start gap-2 text-xs text-slate-600">
-              <input type="checkbox" name="agree" required className="h-4 w-4" />
-              <span>
-                利用規約およびプライバシーポリシーに同意します。
-                <br />※必ず内容をご確認のうえ、チェックを入れてください。
-              </span>
+            <label className="block text-sm font-medium text-slate-800">
+              その他お伝えしたいこと（任意）
             </label>
+            <textarea
+              rows={3}
+              value={other}
+              onChange={(e) => setOther(e.target.value)}
+              placeholder="ご希望やご不安な点などがありましたら、自由にご記入ください。"
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm leading-relaxed
+              focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            />
+            <input type="hidden" name={ENTRY.other} value={other} />
           </div>
 
-          {/* ■ 送信ボタン */}
+          {/* ■ 送信 */}
           <button
             type="submit"
+            disabled={isSending}
             className="w-full inline-flex justify-center items-center rounded-xl px-4 py-3 text-sm
-            font-medium bg-emerald-700 text-white shadow hover:bg-emerald-800
+            font-medium bg-emerald-700 text-white shadow hover:bg-emerald-800 disabled:opacity-60
             focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-600"
           >
-            この内容で送信する
+            {isSending ? "送信中..." : "この内容で送信する"}
           </button>
 
+          {submitted && (
+            <p className="text-sm text-emerald-700 text-center">
+              送信しました。ご連絡まで少々お待ちください。
+            </p>
+          )}
+
           <p className="text-[11px] text-slate-500 text-center">
-            ※送信後すぐに自動返信メールは届きません。内容確認のうえ、カウンセラーより個別にご連絡いたします。
+            ※送信後、自動返信はGoogleフォーム側（Apps Script）で送られます。
           </p>
         </form>
       </div>
