@@ -1,10 +1,13 @@
-/// src/App.jsx
+// src/App.jsx
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
 import Layout from "./components/layout/Layout";
 import Home from "./pages/Home";
 import Services from "./pages/Services";
-import Booking from "./pages/Booking"; // ← ここ大事！
 import Counselors from "./pages/Counselors";
+import Booking from "./pages/Booking";
+import Pricing from "./pages/Pricing";
+import FAQ from "./pages/FAQ";
 
 const router = createBrowserRouter([
   {
@@ -13,15 +16,25 @@ const router = createBrowserRouter([
     children: [
       // トップページ
       { index: true, element: <Home /> },
-      // サービス紹介
+
+      // 各ページ
       { path: "services", element: <Services /> },
       { path: "counselors", element: <Counselors /> },
-      // ★ 予約フォームページ
+      { path: "pricing", element: <Pricing /> },
+      { path: "faq", element: <FAQ /> },
+
+      // 予約
       { path: "booking", element: <Booking /> },
-      // それ以外 → 404
+
+      // 404
       {
         path: "*",
-        element: <div style={{ padding: 40 }}>見つかりません</div>,
+        element: (
+          <div style={{ padding: 40 }}>
+            <h1>ページが見つかりません</h1>
+            <p>URLをご確認ください。</p>
+          </div>
+        ),
       },
     ],
   },

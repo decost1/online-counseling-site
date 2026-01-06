@@ -214,12 +214,16 @@ export function Footer() {
             <p className="text-sm text-gray-600 leading-relaxed">
               こころに、やわらかな木漏れ日を。オンラインで安心して相談できるカウンセリングサービスです。
             </p>
-            <dl className="mt-3 text-sm text-gray-700 space-y-1">
-              <div className="flex gap-2"><dt className="font-medium">住所</dt><dd>{CONFIG.company.address}</dd></div>
-              <div className="flex gap-2"><dt className="font-medium">受付時間</dt><dd>{CONFIG.company.hours}</dd></div>
-              <div className="flex gap-2"><dt className="font-medium">メール</dt><dd><a className="underline underline-offset-4" href={`mailto:${CONFIG.company.mail}`}>{CONFIG.company.mail}</a></dd></div>
-              <div className="flex gap-2"><dt className="font-medium">電話</dt><dd><a className="underline underline-offset-4" href={`tel:${CONFIG.company.phone}`}>{CONFIG.company.phone}</a></dd></div>
-            </dl>
+            <div className="mt-4 space-y-2 text-sm text-gray-700">
+  <p className="font-semibold">会社概要</p>
+  <p className="text-gray-600">
+    運営会社：{CONFIG.company.name}
+  </p>
+  <Link className="inline-block hover:underline underline-offset-4" to="/company">
+    会社概要を見る
+  </Link>
+</div>
+
           </div>
 
           {/* サイトマップ */}
