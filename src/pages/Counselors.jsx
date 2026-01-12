@@ -1,15 +1,64 @@
 ﻿import { useEffect, useState } from "react";
 import { client } from "../sanityClient";
+import { PortableText } from "@portabletext/react";
 
-function plainTextFromPortableText(blocks) {
-  if (!Array.isArray(blocks)) return "";
-  return blocks
-    .map((block) => {
-      if (!block || !Array.isArray(block.children)) return "";
-      return block.children.map((child) => child.text || "").join("");
-    })
-    .filter(Boolean);
-}
+const portableTextComponents = {
+  block: {
+    h2: ({ children }) => (
+      <h2 style={{ fontSize: 18, fontWeight: 800, margin: "18px 0 10px" }}>
+        {children}
+      </h2>
+    ),
+    h3: ({ children }) => (
+      <h3 style={{ fontSize: 16, fontWeight: 800, margin: "16px 0 8px" }}>
+        {children}
+      </h3>
+    ),
+    normal: ({ children }) => (
+      <p style={{ margin: "0 0 10px 0", lineHeight: 1.9 }}>{children}</p>
+    ),
+    blockquote: ({ children }) => (
+      <blockquote
+        style={{
+          margin: "12px 0",
+          padding: "10px 12px",
+          borderLeft: "4px solid #cbd5e1",
+          background: "#f8fafc",
+          borderRadius: 10,
+          lineHeight: 1.9,
+        }}
+      >
+        {children}
+      </blockquote>
+    ),
+  },
+  list: {
+    bullet: ({ children }) => (
+      <ul style={{ paddingLeft: 18, margin: "8px 0 12px" }}>{children}</ul>
+    ),
+    number: ({ children }) => (
+      <ol style={{ paddingLeft: 18, margin: "8px 0 12px" }}>{children}</ol>
+    ),
+  },
+  listItem: {
+    bullet: ({ children }) => (
+      <li style={{ margin: "6px 0", lineHeight: 1.9 }}>{children}</li>
+    ),
+    number: ({ children }) => (
+      <li style={{ margin: "6px 0", lineHeight: 1.9 }}>{children}</li>
+    ),
+  },
+  marks: {
+    strong: ({ children }) => <strong style={{ fontWeight: 800 }}>{children}</strong>,
+    em: ({ children }) => <em>{children}</em>,
+    underline: ({ children }) => <span style={{ textDecoration: "underline" }}>{children}</span>,
+    link: ({ value, children }) => (
+      <a href={value?.href} target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>
+        {children}
+      </a>
+    ),
+  },
+};
 
 export default function Counselors() {
   const [counselors, setCounselors] = useState([]);
@@ -55,77 +104,63 @@ export default function Counselors() {
           gap: 24,
         }}
       >
-        {counselors.map((c) => {
-          const bioLines = plainTextFromPortableText(c.bio);
-
-          return (
-            <li
-              key={c._id}
+        {counselors.map((c) => (
+          <li
+            key={c._id}
+            style={{
+              background: "#ffffff",
+              borderRadius: 14,
+              padding: 24,
+              border: "1px solid #e5e7eb",
+              boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+            }}
+          >
+            <h2
               style={{
-                background: "#ffffff",
-                borderRadius: 14,
-                padding: 24,
-                border: "1px solid #e5e7eb",
-                boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+                color: "#2f855a",
+                fontWeight: 800,
+                fontSize: 22,
+                margin: "0 0 10px 0",
               }}
             >
-              {/* 名前（色＋太字） */}
-              <h2
-                style={{
-                  color: "#2f855a",
-                  fontWeight: 800,
-                  fontSize: 22,
-                  margin: "0 0 10px 0",
-                }}
-              >
-                {c.name}
-              </h2>
+              {c.name}
+            </h2>
 
-              {/* 肩書き */}
-              {c.role ? (
-                <p style={{ margin: "0 0 14px 0", fontWeight: 700 }}>
-                  {c.role}
-                </p>
-              ) : null}
+            {c.role ? (
+              <p style={{ margin: "0 0 14px 0", fontWeight: 700 }}>
+                {c.role}
+              </p>
+            ) : null}
 
-              {/* プロフィール本文 */}
-              {bioLines.length > 0 ? (
-                <div style={{ lineHeight: 1.8 }}>
-                  {bioLines.map((line, idx) => (
-                    <p key={idx} style={{ margin: "0 0 10px 0" }}>
-                      {line}
-                    </p>
+            {Array.isArray(c.bio) && c.bio.length > 0 ? (
+              <div>
+                <PortableText value={c.bio} components={portableTextComponents} />
+              </div>
+            ) : null}
+
+            {Array.isArray(c.specialty) && c.specialty.length > 0 ? (
+              <div style={{ marginTop: 14 }}>
+                <div style={{ fontWeight: 800, marginBottom: 8 }}>専門分野</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {c.specialty.map((tag) => (
+                    <span
+                      key={tag}
+                      style={{
+                        fontSize: 12,
+                        padding: "6px 10px",
+                        borderRadius: 999,
+                        background: "#f3f4f6",
+                        border: "1px solid #e5e7eb",
+                      }}
+                    >
+                      {tag}
+                    </span>
                   ))}
                 </div>
-              ) : null}
-
-              {/* 専門分野 */}
-              {Array.isArray(c.specialty) && c.specialty.length > 0 ? (
-                <div style={{ marginTop: 14 }}>
-                  <div style={{ fontWeight: 800, marginBottom: 8 }}>
-                    専門分野
-                  </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                    {c.specialty.map((tag) => (
-                      <span
-                        key={tag}
-                        style={{
-                          fontSize: 12,
-                          padding: "6px 10px",
-                          borderRadius: 999,
-                          background: "#f3f4f6",
-                          border: "1px solid #e5e7eb",
-                        }}
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </li>
-          );
-        })}
+              </div>
+            ) : null}
+          </li>
+        ))}
       </ul>
     </section>
   );

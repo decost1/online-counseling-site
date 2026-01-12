@@ -8,25 +8,44 @@ import Counselors from "./pages/Counselors";
 import Booking from "./pages/Booking";
 import Pricing from "./pages/Pricing";
 import FAQ from "./pages/FAQ";
+import Contact from "./pages/Contact";
+import About from "./pages/About";
+import Company from "./pages/Company";
+import HowTo from "./pages/HowTo";
+import Flow from "./pages/Flow";
+
+import Tokushoho from "./pages/Tokushoho";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     children: [
-      // トップページ
       { index: true, element: <Home /> },
 
-      // 各ページ
       { path: "services", element: <Services /> },
       { path: "counselors", element: <Counselors /> },
       { path: "pricing", element: <Pricing /> },
       { path: "faq", element: <FAQ /> },
+      { path: "contact", element: <Contact /> },
+      { path: "about", element: <About /> },
+      { path: "company", element: <Company /> },
+      { path: "How-to", element: <HowTo /> },
+      { path: "flow", element: <Flow /> },
 
-      // 予約
       { path: "booking", element: <Booking /> },
 
-      // 404
+      // 法務（今の Layout のリンクが /legal/... なので合わせる）
+      { path: "legal/tokushoho", element: <Tokushoho /> },
+      { path: "legal/terms", element: <Terms /> },
+      { path: "terms", element: <Terms /> },
+
+     { path: "legal/privacy", element: <Privacy /> },
+      { path: "privacy", element: <Privacy /> },
+
+
       {
         path: "*",
         element: (
