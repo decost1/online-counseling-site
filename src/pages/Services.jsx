@@ -42,16 +42,26 @@ export default function Services() {
             </p>
           </div>
 
-          <div className="relative">
-            <div className="absolute inset-0 rounded-2xl ring-1 ring-slate-200 pointer-events-none" />
-            <img
-              src="/photos/services-hero.jpg"
-              alt="オンラインで相談するイメージ"
-              className="relative w-full rounded-2xl shadow-md object-cover aspect-[4/3] bg-slate-200 z-10"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
+          <div className="relative overflow-hidden rounded-2xl shadow-md">
+  {/* 画像 */}
+  <img
+    src="/photos/services-hero.jpg"
+    alt="オンラインで相談するイメージ"
+    className="w-full object-cover aspect-[4/3] bg-slate-200"
+    loading="lazy"
+    decoding="async"
+  />
+
+  {/* ▼ 色味を揃えるグリーン系フィルター */}
+  <div className="absolute inset-0 bg-emerald-900/20 mix-blend-multiply" />
+
+  {/* ▼ ほんのり白を重ねてやさしく */}
+  <div className="absolute inset-0 bg-white/10" />
+
+  {/* 枠線 */}
+  <div className="absolute inset-0 rounded-2xl ring-1 ring-slate-200 pointer-events-none" />
+</div>
+
         </div>
       </section>
 
@@ -181,16 +191,26 @@ export default function Services() {
             </div>
           </div>
 
-          <div className="relative">
-            <div className="absolute inset-0 rounded-2xl ring-1 ring-slate-200 pointer-events-none" />
-            <img
-              src="/photos/services-safe.jpg"
-              alt="安心して相談できる雰囲気のイメージ"
-              className="relative w-full rounded-2xl shadow-md object-cover aspect-[4/3] bg-slate-200 z-10"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
+         <div className="relative overflow-hidden rounded-2xl shadow-md">
+  {/* 画像 */}
+  <img
+    src="/photos/services-safe.jpg"
+    alt="安心して相談できる雰囲気のイメージ"
+    className="w-full object-cover aspect-[4/3] bg-slate-200"
+    loading="lazy"
+    decoding="async"
+  />
+
+  {/* ▼ 上と同じ emerald 系フィルター */}
+  <div className="absolute inset-0 bg-emerald-900/20 mix-blend-multiply" />
+
+  {/* ▼ やさしくするための白レイヤー */}
+  <div className="absolute inset-0 bg-white/10" />
+
+  {/* 枠線 */}
+  <div className="absolute inset-0 rounded-2xl ring-1 ring-slate-200 pointer-events-none" />
+</div>
+
         </div>
       </section>
 
