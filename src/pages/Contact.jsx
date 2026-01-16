@@ -1,34 +1,19 @@
 ﻿// src/pages/Contact.jsx
-import React, { useMemo, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function Contact() {
-  /**
-   * お問い合わせ用 Google Form
-   */
-  const FORM_ID = "1FAIpQLSdkbfVD4L9C6evvE5Lh9044uNpYvAuJnKoQpvP9kySETGrRxQ";
-  const FORM_ACTION = `https://docs.google.com/forms/d/e/${FORM_ID}/formResponse`;
+  // ✅ Apps Script WebアプリURL（あなたが貼ってくれたやつ）
+  const ENDPOINT =
+    "https://script.google.com/macros/s/AKfycbxjre1eu6iRny3IgQRZLdRIzNHy-E5QP3Gt6kBAUJdT__AcE4A5rjqCdMoboBfZKYgc/exec";
 
-  /**
-   * entry 対応（確定）
-   */
-  const ENTRY = useMemo(
-    () => ({
-      name: "entry.979509628",
-      email: "entry.1476530183",
-      message: "entry.1279019491",
-      category: "entry.3811143440",
-    }),
-    []
-  );
-
-  const iframeRef = useRef(null);
   const formRef = useRef(null);
 
   const [isSending, setIsSending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [sendError, setSendError] = useState("");
 
-  // フォーム入力
+  // 入力
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [category, setCategory] = useState("サービス内容について");
@@ -45,13 +30,13 @@ export default function Contact() {
     setMessage("");
     setAgree(false);
     setAgreeError("");
+    setSendError("");
     setIsSending(false);
     setSubmitted(false);
-    // ネイティブの入力状態もリセットしておく（念のため）
     if (formRef.current) formRef.current.reset();
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!agree) {
@@ -59,18 +44,49 @@ export default function Contact() {
       return;
     }
     setAgreeError("");
+    setSendError("");
 
     setIsSending(true);
     setSubmitted(false);
 
-    // Googleフォームへ送信
-    e.currentTarget.submit();
+    try {
+      const body = new URLSearchParams({
+        name,
+        email,
+        category,
+        message,
+      });
 
-    // 送信完了表示（Googleフォームは成功判定が取りづらいので擬似）
-    setTimeout(() => {
-      setIsSending(false);
+      const res = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/x-www-form-urlencoded;charset=UTF-8",
+        },
+        body,
+      });
+
+      // Apps Script は失敗時もHTML返すことがあるので、安全に読む
+      const text = await res.text();
+      let json = null;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        // JSONじゃない＝何かしらエラー/HTML
+      }
+
+      if (!res.ok || !json?.ok) {
+        throw new Error(
+          json?.error || `送信に失敗しました（HTTP ${res.status}）`
+        );
+      }
+
       setSubmitted(true);
-    }, 800);
+    } catch (err) {
+      setSendError(err?.message || "送信に失敗しました。");
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -81,7 +97,6 @@ export default function Contact() {
         サービス内容・料金・ご利用方法など、お気軽にご相談ください。
       </p>
 
-      {/* ✅ 送信後は完了画面のみ表示 */}
       {submitted ? (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 space-y-4">
           <p className="text-emerald-700 font-medium">
@@ -89,7 +104,7 @@ export default function Contact() {
           </p>
 
           <p className="text-sm text-slate-600 leading-relaxed">
-            返信が届かない場合は、迷惑メールフォルダもご確認ください。
+            自動返信メールが届かない場合は、迷惑メールフォルダもご確認ください。
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
@@ -122,39 +137,22 @@ export default function Contact() {
       ) : (
         <form
           ref={formRef}
-          action={FORM_ACTION}
-          method="POST"
-          target="hidden_iframe"
           onSubmit={handleSubmit}
           className="space-y-6 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8"
         >
-          {/* 画面遷移防止 */}
-          <iframe
-            ref={iframeRef}
-            name="hidden_iframe"
-            title="hidden_iframe"
-            className="hidden"
-          />
-
-          {/* Google Forms 用 hidden */}
-          <input type="hidden" name="fvv" value="1" />
-          <input type="hidden" name="partialResponse" value='[null,null,"-1"]' />
-          <input type="hidden" name="pageHistory" value="0" />
-
           <div>
             <label className="block text-sm font-medium mb-1">
               お名前 <span className="text-rose-500 text-xs">必須</span>
             </label>
             <input
               type="text"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
-              focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="山田 花子"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+              focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             />
-            <input type="hidden" name={ENTRY.name} value={name} />
           </div>
 
           <div>
@@ -163,14 +161,13 @@ export default function Contact() {
             </label>
             <input
               type="email"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
-              focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="example@mail.com"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+              focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             />
-            <input type="hidden" name={ENTRY.email} value={email} />
           </div>
 
           <div>
@@ -178,10 +175,10 @@ export default function Contact() {
               お問い合わせ種別
             </label>
             <select
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white
-              focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white
+              focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             >
               <option>サービス内容について</option>
               <option>料金について</option>
@@ -189,7 +186,6 @@ export default function Contact() {
               <option>予約・日程について</option>
               <option>その他</option>
             </select>
-            <input type="hidden" name={ENTRY.category} value={category} />
           </div>
 
           <div>
@@ -198,14 +194,13 @@ export default function Contact() {
             </label>
             <textarea
               rows={5}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm leading-relaxed
-              focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-              placeholder="ご質問やご不明点をご記入ください。"
               required
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              placeholder="ご質問やご不明点をご記入ください。"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm leading-relaxed
+              focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             />
-            <input type="hidden" name={ENTRY.message} value={message} />
           </div>
 
           {/* 同意チェック */}
@@ -247,6 +242,12 @@ export default function Contact() {
               <p className="mt-2 text-sm text-rose-600">{agreeError}</p>
             )}
           </div>
+
+          {sendError && (
+            <p className="text-sm text-rose-600">
+              送信に失敗しました：{sendError}
+            </p>
+          )}
 
           <button
             type="submit"
